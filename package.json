@@ -1,0 +1,51 @@
+{
+  "name": "tryse-stock-learning",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "data:generate": "python3 scripts/generate_demo.py",
+    "data:import": "python3 scripts/import_prices.py",
+    "test:import": "python3 -m unittest discover -s scripts -p test_import_prices.py",
+    "check": "npm run typecheck && npm test && npm run test:import",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:models": ".venv/bin/python -m unittest discover -s scripts -p test_forecasts.py",
+    "data:forecasts": ".venv/bin/python scripts/train_forecasts.py",
+    "export:native": "expo export --platform ios --platform android --output-dir dist-native"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~57.0.16",
+    "expo": "~57.0.24",
+    "expo-localization": "~57.0.2",
+    "expo-sqlite": "~57.0.3",
+    "expo-status-bar": "~57.0.1",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-svg": "15.15.4",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "@testing-library/react-native": "^14.0.1",
+    "@types/jest": "29.5.14",
+    "@types/node": "^26.6.1",
+    "@types/react": "~19.2.2",
+    "jest": "~29.7.0",
+    "jest-expo": "~57.0.5",
+    "prettier": "^3.9.8",
+    "test-renderer": "1.2.0",
+    "typescript": "~6.0.3"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

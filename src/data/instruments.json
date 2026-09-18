@@ -1,0 +1,182 @@
+[
+  {
+    "id": "TW:2330",
+    "symbol": "2330",
+    "name": { "en": "TSMC", "zh-TW": "台積電" },
+    "market": "TW",
+    "currency": "TWD",
+    "sector": { "en": "Semiconductors", "zh-TW": "半導體" },
+    "seedPrice": 58000
+  },
+  {
+    "id": "TW:2454",
+    "symbol": "2454",
+    "name": { "en": "MediaTek", "zh-TW": "聯發科" },
+    "market": "TW",
+    "currency": "TWD",
+    "sector": { "en": "Chip design", "zh-TW": "晶片設計" },
+    "seedPrice": 78000
+  },
+  {
+    "id": "TW:2317",
+    "symbol": "2317",
+    "name": { "en": "Hon Hai", "zh-TW": "鴻海" },
+    "market": "TW",
+    "currency": "TWD",
+    "sector": { "en": "Electronics", "zh-TW": "電子製造" },
+    "seedPrice": 12000
+  },
+  {
+    "id": "TW:2308",
+    "symbol": "2308",
+    "name": { "en": "Delta Electronics", "zh-TW": "台達電" },
+    "market": "TW",
+    "currency": "TWD",
+    "sector": { "en": "Power & automation", "zh-TW": "電源與自動化" },
+    "seedPrice": 28000
+  },
+  {
+    "id": "TW:2382",
+    "symbol": "2382",
+    "name": { "en": "Quanta Computer", "zh-TW": "廣達" },
+    "market": "TW",
+    "currency": "TWD",
+    "sector": { "en": "Computers & servers", "zh-TW": "電腦與伺服器" },
+    "seedPrice": 22000
+  },
+  {
+    "id": "TW:3711",
+    "symbol": "3711",
+    "name": { "en": "ASE Technology", "zh-TW": "日月光投控" },
+    "market": "TW",
+    "currency": "TWD",
+    "sector": { "en": "Chip packaging", "zh-TW": "半導體封測" },
+    "seedPrice": 11000
+  },
+  {
+    "id": "TW:2303",
+    "symbol": "2303",
+    "name": { "en": "UMC", "zh-TW": "聯電" },
+    "market": "TW",
+    "currency": "TWD",
+    "sector": { "en": "Semiconductors", "zh-TW": "半導體" },
+    "seedPrice": 4800
+  },
+  {
+    "id": "TW:2881",
+    "symbol": "2881",
+    "name": { "en": "Fubon Financial", "zh-TW": "富邦金" },
+    "market": "TW",
+    "currency": "TWD",
+    "sector": { "en": "Financial services", "zh-TW": "金融服務" },
+    "seedPrice": 6500
+  },
+  {
+    "id": "TW:2891",
+    "symbol": "2891",
+    "name": { "en": "CTBC Financial", "zh-TW": "中信金" },
+    "market": "TW",
+    "currency": "TWD",
+    "sector": { "en": "Financial services", "zh-TW": "金融服務" },
+    "seedPrice": 2800
+  },
+  {
+    "id": "TW:2412",
+    "symbol": "2412",
+    "name": { "en": "Chunghwa Telecom", "zh-TW": "中華電" },
+    "market": "TW",
+    "currency": "TWD",
+    "sector": { "en": "Telecommunications", "zh-TW": "電信" },
+    "seedPrice": 11500
+  },
+  {
+    "id": "US:AAPL",
+    "symbol": "AAPL",
+    "name": { "en": "Apple", "zh-TW": "蘋果" },
+    "market": "US",
+    "currency": "USD",
+    "sector": { "en": "Consumer technology", "zh-TW": "消費科技" },
+    "seedPrice": 17000
+  },
+  {
+    "id": "US:MSFT",
+    "symbol": "MSFT",
+    "name": { "en": "Microsoft", "zh-TW": "微軟" },
+    "market": "US",
+    "currency": "USD",
+    "sector": { "en": "Software", "zh-TW": "軟體" },
+    "seedPrice": 33000
+  },
+  {
+    "id": "US:NVDA",
+    "symbol": "NVDA",
+    "name": { "en": "NVIDIA", "zh-TW": "輝達" },
+    "market": "US",
+    "currency": "USD",
+    "sector": { "en": "Semiconductors", "zh-TW": "半導體" },
+    "seedPrice": 9500
+  },
+  {
+    "id": "US:AMZN",
+    "symbol": "AMZN",
+    "name": { "en": "Amazon", "zh-TW": "亞馬遜" },
+    "market": "US",
+    "currency": "USD",
+    "sector": { "en": "Commerce & cloud", "zh-TW": "電商與雲端" },
+    "seedPrice": 14500
+  },
+  {
+    "id": "US:GOOGL",
+    "symbol": "GOOGL",
+    "name": { "en": "Alphabet", "zh-TW": "Alphabet" },
+    "market": "US",
+    "currency": "USD",
+    "sector": { "en": "Internet services", "zh-TW": "網路服務" },
+    "seedPrice": 13500
+  },
+  {
+    "id": "US:META",
+    "symbol": "META",
+    "name": { "en": "Meta", "zh-TW": "Meta" },
+    "market": "US",
+    "currency": "USD",
+    "sector": { "en": "Social platforms", "zh-TW": "社群平台" },
+    "seedPrice": 31000
+  },
+  {
+    "id": "US:TSLA",
+    "symbol": "TSLA",
+    "name": { "en": "Tesla", "zh-TW": "特斯拉" },
+    "market": "US",
+    "currency": "USD",
+    "sector": { "en": "Electric vehicles", "zh-TW": "電動車" },
+    "seedPrice": 24000
+  },
+  {
+    "id": "US:JPM",
+    "symbol": "JPM",
+    "name": { "en": "JPMorgan Chase", "zh-TW": "摩根大通" },
+    "market": "US",
+    "currency": "USD",
+    "sector": { "en": "Financial services", "zh-TW": "金融服務" },
+    "seedPrice": 15000
+  },
+  {
+    "id": "US:KO",
+    "symbol": "KO",
+    "name": { "en": "Coca-Cola", "zh-TW": "可口可樂" },
+    "market": "US",
+    "currency": "USD",
+    "sector": { "en": "Consumer staples", "zh-TW": "民生消費" },
+    "seedPrice": 6000
+  },
+  {
+    "id": "US:JNJ",
+    "symbol": "JNJ",
+    "name": { "en": "Johnson & Johnson", "zh-TW": "嬌生" },
+    "market": "US",
+    "currency": "USD",
+    "sector": { "en": "Healthcare", "zh-TW": "醫療保健" },
+    "seedPrice": 16000
+  }
+]

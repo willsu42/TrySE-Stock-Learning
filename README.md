@@ -4,7 +4,75 @@ A bilingual stock-learning app for iOS and Android that combines guided lessons,
 
 This project rebuilds a 2019 Android capstone project. The original contains nine lessons, 50 SQLite quiz questions, and a TSMC/Innolux simulator. We will selectively reuse reviewed educational content and rebuild the trading logic with tests.
 
-**Status: planning and documentation. The features below are planned, not implemented.**
+**Status: the first runnable testing build is implemented.** It uses clearly labeled **synthetic prices**, not downloaded historical market prices. Licensed market-data integration and native device verification remain pending.
+
+## Run the app
+
+Requires Node.js 22.13+ and npm. Install dependencies, then start Expo:
+
+```sh
+npm ci
+npm start
+```
+
+Open with an Expo Go version supporting SDK 57, or use a compatible development build. `npm run ios` requires full Xcode and an iOS simulator; `npm run android` requires an Android SDK/emulator or connected device.
+
+For a local browser preview:
+
+```sh
+npm run web
+```
+
+The preview also uses SQLite. `metro.config.js` supplies the cross-origin isolation headers required by its web worker. If hosting a web export later, the host must supply equivalent headers. No hosting or cloud services are configured in this build.
+
+### Available now
+
+- Responsive overview, bilingual tutor, trading practice, forecast lab, and resource library.
+- Nine bilingual lessons, nine reviewed knowledge checks, hints, worked examples, and related external resources.
+- Twelve resource cards with language/search filters, bookmarks, and explicit read status.
+- The agreed 20-stock catalog, separate TWD/USD wallets, whole-share buy/sell, 20/60-session resets, holdings, gains, and ledger history.
+- SQLite persistence for the dataset, portfolios, trades, learning progress, language, bookmarks, and predictions.
+- Deterministic 2023–2025 **fictional weekday data**, 15,660 price records in total. These are not actual exchange calendars or actual company prices.
+- 520 precomputed ridge-regression forecasts, generated using only data known at each cutoff. Predictions must be locked before their outcomes can be revealed.
+- A validated CSV-to-SQLite staging importer with source metadata and immutable dataset versions. Imported historical data is not yet activated in the mobile app.
+
+The original 50 questions are preserved in `data/legacy/questions.zh-TW.json`, with a source checksum and `needs-review` status. They are not loaded into the learner interface. Selected concepts have been rewritten and translated into the reviewed lessons; two active questions retain their original question IDs. This is not a claim that the full legacy bank has been reviewed.
+
+### Verification
+
+```sh
+npm run check          # TypeScript, Jest, real SQLite persistence, CSV importer tests
+npm run format:check
+npm run export:native  # Produce iOS and Android JS/Hermes bundles; not signed apps
+```
+
+To regenerate or test the Python model:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install -r scripts/requirements.txt
+npm run data:forecasts
+npm run test:models
+```
+
+`npm run data:generate` regenerates the deterministic synthetic price fixture. Regenerate forecasts afterward if the fixture changes, and introduce a new dataset ID whenever its contents change.
+
+Validated during the initial build: TypeScript checks, accounting and transaction-rollback tests, lesson interaction tests, CSV import tests, model future-data isolation, browser buy/sell and reload persistence, language switching, resource bookmarks, and forecast reveal. iOS and Android bundles export successfully. **Native simulator/device execution has not been verified** because full Xcode and Android tooling were unavailable on the development machine.
+
+### Current accounting rules
+
+- Starting balances: **TWD 1,000,000** and **USD 100,000**.
+- All prices and money are integer hundredths of the quoted currency; shares are positive whole numbers.
+- Weighted-average book cost; partial-sale cost rounds half up to a minor unit. A final sale releases all remaining cost.
+- Immediate execution at the displayed synthetic close, zero fees/taxes, no leverage, no FX conversion.
+- Market value changes on advancing a session; cash changes only through recorded transactions.
+- The engine tests integer-result splits and simplified cash dividends. Fractional-share split outcomes are rejected. Real ex-date entitlement, pay-date timing, and cash-in-lieu policies are pending; the bundled demo contains no corporate actions.
+- Trading replay starts on the fictional session labeled `2024-01-02`. The forecast lab uses separate 2025 cutoffs.
+- Each save commits its ledger and state together; stale writers and duplicate order IDs are rejected. Restarting a scenario creates a new session ID and retains the prior SQL journal.
+
+See [development and data notes](docs/DEVELOPMENT.md) for the source layout, importer contract, and remaining integration work.
+
+## Roadmap
 
 The roadmap has two phases:
 
@@ -32,36 +100,36 @@ The first phase validates the learning experience, accounting engine, persistenc
 
 ### Initial scope
 
-| Area | Planned scope |
-| --- | --- |
-| Platforms | iOS and Android |
-| Languages | Traditional Chinese (`zh-TW`) and English (`en`) |
-| Instruments | 10 Taiwan stocks and 10 US stocks |
-| Historical period | 2023–2025, subject to per-instrument data validation |
-| Price frequency | Daily open, high, low, close, and volume where available |
-| Portfolios | Separate TWD and USD practice portfolios |
-| Replay scenarios | 20- and 60-trading-session exercises |
-| Storage | Local SQLite; no account required |
-| Updates | Manually run, repeatable dataset import; no live price feed |
+| Area              | Planned scope                                               |
+| ----------------- | ----------------------------------------------------------- |
+| Platforms         | iOS and Android                                             |
+| Languages         | Traditional Chinese (`zh-TW`) and English (`en`)            |
+| Instruments       | 10 Taiwan stocks and 10 US stocks                           |
+| Historical period | 2023–2025, subject to per-instrument data validation        |
+| Price frequency   | Daily open, high, low, close, and volume where available    |
+| Portfolios        | Separate TWD and USD practice portfolios                    |
+| Replay scenarios  | 20- and 60-trading-session exercises                        |
+| Storage           | Local SQLite; no account required                           |
+| Updates           | Manually run, repeatable dataset import; no live price feed |
 
 ### Taiwan test universe
 
 These are curated, widely followed companies with some industry variety. The list is not a ranked measure of popularity or trading volume. Innolux is excluded from the first test.
 
-| Code | Traditional Chinese name | English name | Industry |
-| --- | --- | --- | --- |
-| 2330 | 台積電 | TSMC | Semiconductor manufacturing |
-| 2454 | 聯發科 | MediaTek | Chip design |
-| 2317 | 鴻海 | Hon Hai / Foxconn | Electronics manufacturing |
-| 2308 | 台達電 | Delta Electronics | Power and automation |
-| 2382 | 廣達 | Quanta Computer | Computers and servers |
-| 3711 | 日月光投控 | ASE Technology Holding | Semiconductor packaging and testing |
-| 2303 | 聯電 | UMC | Semiconductor manufacturing |
-| 2881 | 富邦金 | Fubon Financial | Financial services |
-| 2891 | 中信金 | CTBC Financial | Financial services |
-| 2412 | 中華電 | Chunghwa Telecom | Telecommunications |
+| Code | Traditional Chinese name | English name           | Industry                            |
+| ---- | ------------------------ | ---------------------- | ----------------------------------- |
+| 2330 | 台積電                   | TSMC                   | Semiconductor manufacturing         |
+| 2454 | 聯發科                   | MediaTek               | Chip design                         |
+| 2317 | 鴻海                     | Hon Hai / Foxconn      | Electronics manufacturing           |
+| 2308 | 台達電                   | Delta Electronics      | Power and automation                |
+| 2382 | 廣達                     | Quanta Computer        | Computers and servers               |
+| 3711 | 日月光投控               | ASE Technology Holding | Semiconductor packaging and testing |
+| 2303 | 聯電                     | UMC                    | Semiconductor manufacturing         |
+| 2881 | 富邦金                   | Fubon Financial        | Financial services                  |
+| 2891 | 中信金                   | CTBC Financial         | Financial services                  |
+| 2412 | 中華電                   | Chunghwa Telecom       | Telecommunications                  |
 
-The **10 US stocks remain to be selected** from the S&P 500 and QQQ stock collections, considering sector variety and complete historical data.
+The approved **10 US test stocks** are Apple (`AAPL`), Microsoft (`MSFT`), NVIDIA (`NVDA`), Amazon (`AMZN`), Alphabet Class A (`GOOGL`), Meta (`META`), Tesla (`TSLA`), JPMorgan Chase (`JPM`), Coca-Cola (`KO`), and Johnson & Johnson (`JNJ`). Their inclusion is a curated test list, not a historical constituent-membership claim.
 
 ### Bilingual learning and beginner tutor
 
@@ -104,7 +172,7 @@ Resource cards show the publisher, topic, source language, format, difficulty, a
 - Start with disclosed zero trading fees and taxes, without leverage, short selling, or currency conversion.
 - Apply splits and dividends correctly when they occur in an included scenario. Scenario eligibility depends on having the required corporate-action data.
 
-Starting balances and detailed cost-basis/rounding rules must be specified before implementing the engine.
+The current build's balances and cost-basis/rounding rules are specified above. Real-data scenarios must also define corporate-action eligibility before activation.
 
 ### Accounting engine and tests
 
@@ -149,27 +217,27 @@ The three-year dataset supports an initial experiment; it is not enough to estab
 
 ### Proposed technology
 
-| Component | Choice |
-| --- | --- |
-| Mobile app | React Native + Expo + TypeScript |
-| Local database | SQLite through `expo-sqlite` |
-| Accounting logic | Standalone TypeScript module |
-| Unit/component tests | Jest, `jest-expo`, React Native Testing Library |
-| Forecast experiments | Python + scikit-learn |
-| Initial content/data delivery | Versioned bundled dataset |
+| Component                     | Choice                                          |
+| ----------------------------- | ----------------------------------------------- |
+| Mobile app                    | React Native + Expo + TypeScript                |
+| Local database                | SQLite through `expo-sqlite`                    |
+| Accounting logic              | Standalone TypeScript module                    |
+| Unit/component tests          | Jest, `jest-expo`, React Native Testing Library |
+| Forecast experiments          | Python + scikit-learn                           |
+| Initial content/data delivery | Versioned bundled dataset                       |
 
 SQLite remains the mobile database if a shared backend is introduced later. Database migrations and storage access should be separated from screen code; PostgreSQL integration will still require deliberate schema mapping and synchronization work.
 
 ### Initial database design
 
-| Data group | Proposed tables |
-| --- | --- |
-| Instruments and collections | `instruments`, `collection_memberships` |
-| Market data | `datasets`, `daily_prices`, `corporate_actions`, `trading_sessions` |
-| Simulation | `simulation_sessions`, `trades`, `cash_ledger`, `positions` |
-| Learning | `lessons`, `questions`, translation tables, `lesson_progress`, `quiz_attempts` |
-| External resources | `resources`, `lesson_resources`, `bookmarks` |
-| Forecasts | `forecast_runs`, `forecast_points`, `forecast_evaluations` |
+| Data group                  | Proposed tables                                                                |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| Instruments and collections | `instruments`, `collection_memberships`                                        |
+| Market data                 | `datasets`, `daily_prices`, `corporate_actions`, `trading_sessions`            |
+| Simulation                  | `simulation_sessions`, `trades`, `cash_ledger`, `positions`                    |
+| Learning                    | `lessons`, `questions`, translation tables, `lesson_progress`, `quiz_attempts` |
+| External resources          | `resources`, `lesson_resources`, `bookmarks`                                   |
+| Forecasts                   | `forecast_runs`, `forecast_points`, `forecast_evaluations`                     |
 
 Use stable instrument IDs rather than ticker strings alone. Price records are unique by dataset, instrument, and trading date. Holdings and balances must reconcile with recorded transactions; cached position summaries are not an independent accounting authority.
 
@@ -177,12 +245,12 @@ For sizing, 20 stocks × 3 years × approximately 250 sessions is about **15,000
 
 ### Market-data sources and first import
 
-| Data | Proposed source | Status |
-| --- | --- | --- |
-| Taiwan price history | TWSE historical datasets or an authorized vendor | Acquisition route and usage rights to confirm |
-| US price history | Twelve Data; Alpha Vantage as an alternative | Coverage, cost, and usage rights to confirm |
-| 0050 holdings | Yuanta published holdings | Record the membership snapshot date |
-| Splits/dividends | Exchange or licensed provider corporate-action records | Validate coverage for selected stocks |
+| Data                 | Proposed source                                        | Status                                        |
+| -------------------- | ------------------------------------------------------ | --------------------------------------------- |
+| Taiwan price history | TWSE historical datasets or an authorized vendor       | Acquisition route and usage rights to confirm |
+| US price history     | Twelve Data; Alpha Vantage as an alternative           | Coverage, cost, and usage rights to confirm   |
+| 0050 holdings        | Yuanta published holdings                              | Record the membership snapshot date           |
+| Splits/dividends     | Exchange or licensed provider corporate-action records | Validate coverage for selected stocks         |
 
 References:
 
@@ -272,13 +340,14 @@ The current product is an educational simulator. Connecting to actual brokerage 
 
 The simulated accounting engine alone is not sufficient to operate a real-money trading service.
 
-## Decisions still open
+## Remaining work and decisions
 
-- Select the 10 US test stocks.
 - Confirm data providers, budget, and permitted data uses.
 - Validate 2023–2025 price and corporate-action coverage for all 20 stocks.
-- Set starting TWD/USD balances, cost-basis method, rounding rules, and scenario dates.
-- Finalize the reviewed bilingual curriculum and quiz bank.
-- Define the first ML model, chronological training/evaluation cutoffs, and error metrics.
+- Connect reviewed, licensed datasets to the app's scenario catalog, with actual exchange calendars and corporate-action policies.
+- Review and translate more of the original quiz bank; add per-attempt history and broader lesson coverage.
+- Evaluate the forecast model on licensed real data with documented chronological splits and selection-bias limits.
+- Verify on physical iOS/Android devices or native simulators.
+- Add accounts, cloud delivery, and automatic data imports only as the future phase requires.
 
-Implementation begins only after the planning stage is explicitly concluded.
+The first build is an offline educational prototype. No price API, web crawler, brokerage connection, or live trading service is active.

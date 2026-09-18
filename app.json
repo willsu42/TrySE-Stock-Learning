@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "name": "TrySE",
+    "slug": "tryse-stock-learning",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": { "supportsTablet": true, "bundleIdentifier": "com.tryse.stocklearning" },
+    "android": { "package": "com.tryse.stocklearning" },
+    "web": { "bundler": "metro" },
+    "plugins": ["expo-sqlite", "expo-localization"]
+  }
+}

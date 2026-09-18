@@ -1,0 +1,10 @@
+node_modules/
+.venv/
+.expo/
+.playwright-mcp/
+dist/
+dist-native/
+package-lock.json
+src/data/demo-prices.json
+src/data/forecasts.json
+data/legacy/

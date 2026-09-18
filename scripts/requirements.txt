@@ -1,0 +1,2 @@
+# Compatible with Python 3.9+; install in a virtual environment.
+scikit-learn==1.6.1
