@@ -1,5 +1,7 @@
 # TrySE — Stock Learning
 
+https://try-se-stock-learning.vercel.app/.  
+
 **Learn a concept. Practice a trade. Explain the result.**
 
 TrySE is a Traditional Chinese and English stock-learning app built with React Native, Expo, and TypeScript for iOS and Android. It brings beginner lessons, quizzes, a trading simulator, and a forecast challenge into one learning flow.
