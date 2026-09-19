@@ -119,7 +119,13 @@ npm run ios          # Requires Xcode and an iOS simulator
 npm run android      # Requires Android SDK and an emulator/device
 ```
 
-Use an Expo Go version compatible with the project's SDK 57, or a compatible development build. The web preview uses SQLite too; `metro.config.js` provides its required cross-origin isolation headers. A hosted web export would need equivalent headers.
+Use an Expo Go version compatible with the project's SDK 57, or a compatible development build. The web preview uses SQLite too; `metro.config.js` provides its required cross-origin isolation headers.
+
+## Deploy the web demo
+
+Import this GitHub repository into Vercel using **Framework Preset: Other** and the repository root. The included [vercel.json](vercel.json) sets the web export command, `dist` output directory, and SQLite isolation headers. No environment variables or backend services are required for the current demo.
+
+Follow the [Vercel deployment guide](docs/DEPLOYMENT.md) for setup, public-access checks, and troubleshooting. This publishes the browser demo; native app distribution is separate.
 
 ## Verification
 
