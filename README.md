@@ -1,6 +1,6 @@
 # TrySE — Stock Learning
 
-https://try-se-stock-learning.vercel.app/.  
+Website Link: https://try-se-stock-learning.vercel.app/  
 
 **Learn a concept. Practice a trade. Explain the result.**
 
