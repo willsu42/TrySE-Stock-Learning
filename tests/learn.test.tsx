@@ -10,6 +10,7 @@ const mockUpdate = jest.fn(async (change: (state: AppState) => AppState) => {
   return true;
 });
 jest.mock('../src/storage/state', () => ({
+  uniqueId: () => `attempt-${mockState.quizAttempts?.length ?? 0}`,
   useStore: () => ({ state: mockState, update: mockUpdate, busy: false }),
 }));
 beforeEach(() => {
@@ -37,6 +38,7 @@ test('a wrong answer gets an explanation, then a correct answer unlocks completi
   await view.rerender(<Learn navigate={jest.fn()} />);
   await fireEvent.press(screen.getByText('Complete this lesson'));
   expect(mockState.completedLessons).toEqual(['ownership']);
+  expect(mockState.quizAttempts?.map((attempt) => attempt.correct)).toEqual([false, true]);
   mockState = { ...mockState, locale: 'zh-TW' };
   await view.rerender(<Learn navigate={jest.fn()} />);
   expect(screen.getByText('已完成課程 ✓')).toBeTruthy();

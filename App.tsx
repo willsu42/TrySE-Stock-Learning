@@ -12,7 +12,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { StoreProvider, useStore } from './src/storage/state';
-import { Badge, Button, colors, errorText, Icon, styles as s } from './src/components/ui';
+import { Badge, Button, ThemeProvider, errorText, Icon, useTheme } from './src/components/ui';
 import { Home, Tab } from './src/screens/Home';
 import { Learn } from './src/screens/Learn';
 import { Trade } from './src/screens/Trade';
@@ -27,6 +27,8 @@ const nav: { id: Tab; en: string; zh: string }[] = [
   { id: 'library', en: 'Resources', zh: '資源' },
 ];
 function Shell() {
+  const { colors, styles: s } = useTheme();
+  const local = createLocalStyles(colors);
   const { state, busy, error, clearError, update } = useStore(),
     { width } = useWindowDimensions();
   const [tab, setTab] = useState<Tab>('home');
@@ -35,7 +37,7 @@ function Shell() {
   if (!state)
     return (
       <SafeAreaView style={[local.loading]}>
-        {busy ? <ActivityIndicator color={colors.green} /> : null}
+        {busy ? <ActivityIndicator color={colors.accent} /> : null}
         <Text style={s.h2}>
           {busy ? 'Preparing your learning space…' : 'Could not open your learning space'}
         </Text>
@@ -70,19 +72,19 @@ function Shell() {
             paddingVertical: vertical ? 14 : 10,
             paddingHorizontal: vertical ? 16 : 4,
             borderRadius: 12,
-            backgroundColor: vertical && tab === item.id ? colors.mint : 'transparent',
+            backgroundColor: vertical && tab === item.id ? colors.accentSoft : 'transparent',
             opacity: pressed ? 0.65 : 1,
             minWidth: vertical ? undefined : 55,
           })}
         >
           <Icon
             name={item.id}
-            color={tab === item.id ? colors.green : colors.muted}
+            color={tab === item.id ? colors.accent : colors.muted}
             size={vertical ? 21 : 20}
           />
           <Text
             style={{
-              color: tab === item.id ? colors.green : colors.muted,
+              color: tab === item.id ? colors.accent : colors.muted,
               fontSize: vertical ? 14 : 10,
               fontWeight: tab === item.id ? '700' : '500',
             }}
@@ -110,8 +112,8 @@ function Shell() {
             </View>
             {navigation(true)}
             <View style={{ flex: 1 }} />
-            <View style={{ padding: 16, backgroundColor: '#F0F4E9', borderRadius: 16, gap: 8 }}>
-              <Icon name="learn" color={colors.green} />
+            <View style={{ padding: 16, backgroundColor: colors.soft, borderRadius: 16, gap: 8 }}>
+              <Icon name="learn" color={colors.accent} />
               <Text style={s.h3}>{t('Progress over perfection.', '進步比完美更重要。')}</Text>
               <Text style={s.muted}>
                 {t('A little learning makes a difference.', '一點一滴的學習，都有意義。')}
@@ -165,7 +167,7 @@ function Shell() {
                   accessibilityRole="alert"
                   style={{ padding: 18, backgroundColor: '#FFF0EB', borderRadius: 12, gap: 10 }}
                 >
-                  <Text style={{ color: colors.red }}>{errorText(error, l)}</Text>
+                  <Text style={{ color: colors.danger }}>{errorText(error, l)}</Text>
                   <Button title={t('Dismiss', '關閉')} secondary small onPress={clearError} />
                 </View>
               )}
@@ -194,57 +196,66 @@ function Shell() {
     </SafeAreaView>
   );
 }
+function LocalizedShell() {
+  const { state } = useStore();
+  return (
+    <ThemeProvider locale={state?.locale ?? 'zh-TW'}>
+      <Shell />
+    </ThemeProvider>
+  );
+}
 export default function App() {
   return (
     <SafeAreaProvider>
       <StoreProvider>
-        <Shell />
+        <LocalizedShell />
       </StoreProvider>
     </SafeAreaProvider>
   );
 }
-const local = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.cream },
-  loading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 30,
-    gap: 20,
-    backgroundColor: colors.cream,
-  },
-  sidebar: {
-    width: 232,
-    backgroundColor: '#FCFDF9',
-    borderRightWidth: 1,
-    borderColor: colors.line,
-    padding: 22,
-    paddingTop: 34,
-  },
-  logo: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: colors.green,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brand: { fontSize: 27, fontWeight: '800', color: colors.ink, letterSpacing: -1.1 },
-  header: {
-    minHeight: 80,
-    borderBottomWidth: 1,
-    borderColor: colors.line,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#FCFDF9',
-  },
-  bottom: {
-    paddingTop: 4,
-    borderTopWidth: 1,
-    borderColor: colors.line,
-    backgroundColor: colors.white,
-    paddingBottom: Platform.OS === 'web' ? 8 : 0,
-  },
-});
+const createLocalStyles = (colors: ReturnType<typeof useTheme>['colors']) =>
+  StyleSheet.create({
+    root: { flex: 1, backgroundColor: colors.cream },
+    loading: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 30,
+      gap: 20,
+      backgroundColor: colors.cream,
+    },
+    sidebar: {
+      width: 232,
+      backgroundColor: colors.surface,
+      borderRightWidth: 1,
+      borderColor: colors.line,
+      padding: 22,
+      paddingTop: 34,
+    },
+    logo: {
+      width: 40,
+      height: 40,
+      borderRadius: 12,
+      backgroundColor: colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    brand: { fontSize: 27, fontWeight: '800', color: colors.ink, letterSpacing: -1.1 },
+    header: {
+      minHeight: 80,
+      borderBottomWidth: 1,
+      borderColor: colors.line,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: colors.surface,
+    },
+    bottom: {
+      paddingTop: 4,
+      borderTopWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.white,
+      paddingBottom: Platform.OS === 'web' ? 8 : 0,
+    },
+  });

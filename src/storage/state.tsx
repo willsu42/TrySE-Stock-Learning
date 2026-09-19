@@ -22,6 +22,7 @@ export function initialState(locale: AppState['locale'] = 'en'): AppState {
     bookmarks: [],
     readResources: [],
     forecasts: [],
+    quizAttempts: [],
   };
 }
 interface Store {

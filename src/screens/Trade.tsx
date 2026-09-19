@@ -1,15 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import {
-  Badge,
-  Button,
-  Card,
-  colors,
-  Field,
-  LineChart,
-  money,
-  styles as s,
-} from '../components/ui';
+import { Badge, Button, Card, Field, LineChart, money, useTheme } from '../components/ui';
 import {
   candle,
   currentDate,
@@ -24,6 +15,7 @@ import { advanceSession, executeOrder, newPortfolio, valuation } from '../domain
 import { Market } from '../domain/types';
 import { uniqueId, useStore } from '../storage/state';
 export function Trade() {
+  const { colors, styles: s } = useTheme();
   const { state, busy, update } = useStore();
   const [selected, setSelected] = useState('TW:2330'),
     [search, setSearch] = useState(''),
@@ -45,6 +37,10 @@ export function Trade() {
     history = visibleHistory(stock.id, date),
     metrics = valuation(portfolio, pricesOn(state.market, date));
   const position = portfolio.positions[stock.id] ?? { shares: 0, cost: 0 };
+  const profitColor = (value: number) =>
+    value > 0 ? colors.positive : value < 0 ? colors.negative : colors.muted;
+  const profitMoney = (value: number) =>
+    `${value > 0 ? '+' : ''}${money(value, portfolio.currency, l)}`;
   const number = /^\d+$/.test(quantity) ? Number(quantity) : NaN;
   const valid =
     Number.isSafeInteger(number) && number > 0 && Number.isSafeInteger(number * row.close);
@@ -189,7 +185,7 @@ export function Trade() {
                 style={{
                   padding: 12,
                   borderRadius: 12,
-                  backgroundColor: stock.id === i.id ? colors.mint : 'transparent',
+                  backgroundColor: stock.id === i.id ? colors.accentSoft : 'transparent',
                   gap: 3,
                 }}
               >
@@ -264,7 +260,7 @@ export function Trade() {
               onPress={() => void submit()}
             />
             {receipt && (
-              <Text accessibilityRole="alert" style={{ color: colors.green, fontWeight: '600' }}>
+              <Text accessibilityRole="alert" style={{ color: colors.accent, fontWeight: '600' }}>
                 {t('Order filled and saved to your ledger.', '已成交並儲存至交易紀錄。')}
               </Text>
             )}
@@ -273,6 +269,12 @@ export function Trade() {
       </View>
       <Card>
         <Text style={s.h2}>{t('Your holdings', '你的持股')}</Text>
+        <Text style={s.muted}>
+          {t(
+            'Profit/loss colors: green for gains, red for losses, gray for zero.',
+            '損益顏色：紅色為獲利、綠色為虧損、灰色為零。',
+          )}
+        </Text>
         {Object.entries(portfolio.positions).filter(([, p]) => p.shares > 0).length === 0 ? (
           <Text style={s.muted}>
             {t(
@@ -306,20 +308,25 @@ export function Trade() {
                   <Text style={s.text}>
                     {money(p.shares * candle(id, date)!.close, portfolio.currency, l)}
                   </Text>
-                  <Text style={s.muted}>
+                  <Text
+                    style={[
+                      s.muted,
+                      { color: profitColor(p.shares * candle(id, date)!.close - p.cost) },
+                    ]}
+                  >
                     {t('Unrealized', '未實現')}:{' '}
-                    {money(p.shares * candle(id, date)!.close - p.cost, portfolio.currency, l)}
+                    {profitMoney(p.shares * candle(id, date)!.close - p.cost)}
                   </Text>
                 </View>
               </View>
             ))
         )}
         <View style={[s.wrap, { marginTop: 4 }]}>
-          <Text style={s.muted}>
-            {t('Realized', '已實現')}: {money(metrics.realized, portfolio.currency, l)}
+          <Text style={[s.muted, { color: profitColor(metrics.realized) }]}>
+            {t('Realized', '已實現')}: {profitMoney(metrics.realized)}
           </Text>
-          <Text style={s.muted}>
-            {t('Unrealized', '未實現')}: {money(metrics.unrealized, portfolio.currency, l)}
+          <Text style={[s.muted, { color: profitColor(metrics.unrealized) }]}>
+            {t('Unrealized', '未實現')}: {profitMoney(metrics.unrealized)}
           </Text>
         </View>
       </Card>

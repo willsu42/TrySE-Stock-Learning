@@ -70,6 +70,17 @@ export interface AppState {
   bookmarks: string[];
   readResources: string[];
   forecasts: ForecastAttempt[];
+  /** Optional for compatibility with version-1 snapshots saved before attempt history existed. */
+  quizAttempts?: QuizAttempt[];
+}
+export interface QuizAttempt {
+  id: string;
+  questionId: string;
+  questionVersion: 'v1';
+  answerIndex: number;
+  correct: boolean;
+  createdAt: string;
+  locale: Locale;
 }
 export type Order = { id: string; instrumentId: string; side: 'buy' | 'sell'; quantity: number };
 export interface Quote {

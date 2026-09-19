@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Linking, Text, View } from 'react-native';
-import { Badge, Button, Card, colors, Field, styles as s } from '../components/ui';
+import { Badge, Button, Card, Field, useTheme } from '../components/ui';
 import { resources } from '../data/learning';
 import { toggleItem, useStore } from '../storage/state';
 export function Library() {
+  const { colors, styles: s } = useTheme();
   const { state, update, busy } = useStore();
   const [search, setSearch] = useState(''),
     [language, setLanguage] = useState<'all' | 'en' | 'zh-TW'>('all'),
@@ -66,7 +67,7 @@ export function Library() {
           />
         </View>
       </Card>
-      {!!error && <Text style={{ color: colors.red }}>{error}</Text>}
+      {!!error && <Text style={{ color: colors.danger }}>{error}</Text>}
       {filtered.length === 0 && (
         <Card>
           <Text style={s.muted}>

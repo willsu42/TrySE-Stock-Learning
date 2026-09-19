@@ -1,70 +1,27 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, TextInput, TextStyle, View, ViewStyle } from 'react-native';
+import { Pressable, Text, TextInput, TextStyle, View, ViewStyle } from 'react-native';
 import Svg, { Circle, Line, Path, Polyline } from 'react-native-svg';
 import { Currency, Locale } from '../domain/types';
-export const colors = {
-  ink: '#172D2A',
-  muted: '#65756F',
-  green: '#186B52',
-  mint: '#DDF3E8',
-  lime: '#DBF483',
-  cream: '#F6F7F2',
-  line: '#E1E7DF',
-  white: '#FFFFFF',
-  red: '#AD4141',
-  amber: '#8A5B1A',
-};
-export const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.white,
-    borderWidth: 1,
-    borderColor: colors.line,
-    borderRadius: 20,
-    padding: 22,
-    gap: 14,
-  },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  between: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  wrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  column: { gap: 20 },
-  eyebrow: {
-    color: colors.green,
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 1.7,
-    textTransform: 'uppercase',
-  },
-  h1: { color: colors.ink, fontSize: 32, lineHeight: 40, fontWeight: '700', letterSpacing: -1 },
-  h2: { color: colors.ink, fontSize: 21, lineHeight: 28, fontWeight: '600', letterSpacing: -0.3 },
-  h3: { color: colors.ink, fontSize: 16, lineHeight: 23, fontWeight: '600' },
-  text: { color: colors.ink, fontSize: 14, lineHeight: 22 },
-  muted: { color: colors.muted, fontSize: 13, lineHeight: 20 },
-  metric: { color: colors.ink, fontSize: 28, fontWeight: '600', letterSpacing: -0.8 },
-  input: {
-    borderWidth: 1,
-    borderColor: '#C7D5CD',
-    borderRadius: 12,
-    padding: 14,
-    fontSize: 16,
-    color: colors.ink,
-    backgroundColor: '#FAFCF9',
-    minHeight: 48,
-  },
-});
+import { useTheme } from './theme';
+export { ThemeProvider, useTheme } from './theme';
 export function Label({ children, style }: React.PropsWithChildren<{ style?: TextStyle }>) {
+  const { styles } = useTheme();
   return <Text style={[styles.text, style]}>{children}</Text>;
 }
 export function Card({ children, style }: React.PropsWithChildren<{ style?: ViewStyle }>) {
+  const { styles } = useTheme();
   return <View style={[styles.card, style]}>{children}</View>;
 }
 export function Badge({
   children,
-  tone = 'green',
-}: React.PropsWithChildren<{ tone?: 'green' | 'amber' | 'plain' }>) {
+  tone = 'accent',
+}: React.PropsWithChildren<{ tone?: 'accent' | 'amber' | 'plain' }>) {
+  const { colors } = useTheme();
   return (
     <View
       style={{
-        backgroundColor: tone === 'amber' ? '#FFF2D7' : tone === 'plain' ? '#EEF1EB' : colors.mint,
+        backgroundColor:
+          tone === 'amber' ? '#FFF2D7' : tone === 'plain' ? colors.plain : colors.accentSoft,
         paddingVertical: 5,
         paddingHorizontal: 10,
         borderRadius: 7,
@@ -75,7 +32,7 @@ export function Badge({
         style={{
           fontSize: 11,
           fontWeight: '600',
-          color: tone === 'amber' ? colors.amber : colors.green,
+          color: tone === 'amber' ? colors.amber : colors.accent,
         }}
       >
         {children}
@@ -98,6 +55,7 @@ export function Button({
   small?: boolean;
   testID?: string;
 }) {
+  const { colors } = useTheme();
   return (
     <Pressable
       accessibilityRole="button"
@@ -107,7 +65,7 @@ export function Button({
       disabled={disabled}
       onPress={onPress}
       style={({ pressed }) => ({
-        backgroundColor: secondary ? '#EFF3EB' : colors.green,
+        backgroundColor: secondary ? colors.secondary : colors.accent,
         borderRadius: 11,
         paddingHorizontal: small ? 13 : 19,
         paddingVertical: small ? 10 : 14,
@@ -142,6 +100,7 @@ export function Field({
   numeric?: boolean;
   placeholder?: string;
 }) {
+  const { colors, styles } = useTheme();
   return (
     <View style={{ gap: 7 }}>
       <Text style={styles.muted}>{label}</Text>
@@ -151,7 +110,7 @@ export function Field({
         onChangeText={onChange}
         keyboardType={numeric ? 'decimal-pad' : 'default'}
         placeholder={placeholder}
-        placeholderTextColor="#8A9891"
+        placeholderTextColor={colors.placeholder}
         style={styles.input}
       />
     </View>
@@ -169,12 +128,14 @@ export function money(value: number, currency: Currency, locale: Locale, decimal
 export function LineChart({
   values,
   height = 140,
-  color = colors.green,
+  color,
 }: {
   values: number[];
   height?: number;
   color?: string;
 }) {
+  const { colors } = useTheme();
+  const chartColor = color ?? colors.accent;
   if (!values.length) return null;
   const min = Math.min(...values),
     max = Math.max(...values),
@@ -205,13 +166,13 @@ export function LineChart({
         ))}
         <Path
           d={`M 10 ${height} L ${points.replace(/ /g, ' L ')} L 590 ${height} Z`}
-          fill={color}
+          fill={chartColor}
           opacity={0.055}
         />
         <Polyline
           points={points}
           fill="none"
-          stroke={color}
+          stroke={chartColor}
           strokeWidth="2.3"
           strokeLinejoin="round"
         />
@@ -219,21 +180,15 @@ export function LineChart({
           cx="590"
           cy={height - 15 - ((last - min) / span) * (height - 30)}
           r="4"
-          fill={color}
+          fill={chartColor}
         />
       </Svg>
     </View>
   );
 }
-export function Icon({
-  name,
-  size = 21,
-  color = colors.muted,
-}: {
-  name: string;
-  size?: number;
-  color?: string;
-}) {
+export function Icon({ name, size = 21, color }: { name: string; size?: number; color?: string }) {
+  const { colors } = useTheme();
+  const iconColor = color ?? colors.muted;
   const paths: Record<string, string> = {
     home: 'M3 10L12 3l9 7v11h-6v-7H9v7H3Z',
     learn: 'M3 4h7l2 2 2-2h7v16h-7l-2 2-2-2H3ZM12 6v16',
@@ -248,7 +203,7 @@ export function Icon({
       <Path
         d={paths[name] ?? paths.home}
         fill="none"
-        stroke={color}
+        stroke={iconColor}
         strokeWidth="1.7"
         strokeLinecap="round"
         strokeLinejoin="round"

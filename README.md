@@ -28,10 +28,11 @@ The preview also uses SQLite. `metro.config.js` supplies the cross-origin isolat
 ### Available now
 
 - Responsive overview, bilingual tutor, trading practice, forecast lab, and resource library.
+- Traditional Chinese uses a blue/gray interface; English retains the green theme. Profit/loss colors follow the interface language: Chinese uses red for gains and green for losses; English reverses these. Zero stays gray, and signed amounts remain visible. Price lines use the interface accent color rather than indicating a gain or loss.
 - Nine bilingual lessons, nine reviewed knowledge checks, hints, worked examples, and related external resources.
 - Twelve resource cards with language/search filters, bookmarks, and explicit read status.
 - The agreed 20-stock catalog, separate TWD/USD wallets, whole-share buy/sell, 20/60-session resets, holdings, gains, and ledger history.
-- SQLite persistence for the dataset, portfolios, trades, learning progress, language, bookmarks, and predictions.
+- SQLite persistence for the dataset, portfolios, trades, learning progress, quiz-attempt history, language, bookmarks, and predictions. Saved portfolios are checked against the trade journal; recorded trades, quiz attempts, and locked predictions cannot be rewritten through app saves.
 - Deterministic 2023–2025 **fictional weekday data**, 15,660 price records in total. These are not actual exchange calendars or actual company prices.
 - 520 precomputed ridge-regression forecasts, generated using only data known at each cutoff. Predictions must be locked before their outcomes can be revealed.
 - A validated CSV-to-SQLite staging importer with source metadata and immutable dataset versions. Imported historical data is not yet activated in the mobile app.
@@ -345,7 +346,7 @@ The simulated accounting engine alone is not sufficient to operate a real-money 
 - Confirm data providers, budget, and permitted data uses.
 - Validate 2023–2025 price and corporate-action coverage for all 20 stocks.
 - Connect reviewed, licensed datasets to the app's scenario catalog, with actual exchange calendars and corporate-action policies.
-- Review and translate more of the original quiz bank; add per-attempt history and broader lesson coverage.
+- Review and translate more of the original quiz bank and broaden lesson coverage.
 - Evaluate the forecast model on licensed real data with documented chronological splits and selection-bias limits.
 - Verify on physical iOS/Android devices or native simulators.
 - Add accounts, cloud delivery, and automatic data imports only as the future phase requires.

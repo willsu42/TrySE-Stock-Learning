@@ -1,12 +1,13 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import { Badge, Button, Card, colors, Icon, LineChart, money, styles as s } from '../components/ui';
+import { Badge, Button, Card, Icon, LineChart, money, useTheme } from '../components/ui';
 import { useStore } from '../storage/state';
 import { lessons, questions } from '../data/learning';
 import { currentDate, instruments, pricesOn, visibleHistory } from '../data/market';
 import { valuation } from '../domain/engine';
 export type Tab = 'home' | 'learn' | 'trade' | 'lab' | 'library';
 export function Home({ navigate }: { navigate: (tab: Tab) => void }) {
+  const { colors, styles: s } = useTheme();
   const { state } = useStore();
   if (!state) return null;
   const l = state.locale,
@@ -39,7 +40,7 @@ export function Home({ navigate }: { navigate: (tab: Tab) => void }) {
       >
         <View style={s.between}>
           <Badge>{t('LEARN BY DOING', '在實作中學習')}</Badge>
-          <Icon name="trade" color={colors.lime} size={35} />
+          <Icon name="trade" color={colors.highlight} size={35} />
         </View>
         <Text
           style={{
@@ -55,7 +56,7 @@ export function Home({ navigate }: { navigate: (tab: Tab) => void }) {
             '你的第一筆投資？\n先投資一點理解。',
           )}
         </Text>
-        <Text style={{ color: '#BDCFC6', fontSize: 14, lineHeight: 23, maxWidth: 500 }}>
+        <Text style={{ color: colors.heroMuted, fontSize: 14, lineHeight: 23, maxWidth: 500 }}>
           {t(
             'Explore the basics, try the markets, and learn from every outcome. All with practice money.',
             '探索基礎、體驗市場，從每個結果中學習。全程使用模擬資金。',
@@ -103,19 +104,19 @@ export function Home({ navigate }: { navigate: (tab: Tab) => void }) {
         <Card style={{ flex: 1.2, minWidth: 270 }}>
           <View style={s.between}>
             <Text style={s.h2}>{t('Your next chapter', '下一段學習')}</Text>
-            <Icon name="learn" color={colors.green} />
+            <Icon name="learn" color={colors.accent} />
           </View>
           <Text style={s.eyebrow}>
             {t('FOUNDATIONS', '基礎課程')} · {nextLesson.minutes} {t('MIN', '分鐘')}
           </Text>
           <Text style={s.h2}>{nextLesson.title[l]}</Text>
           <Text style={s.muted}>{nextLesson.description[l]}</Text>
-          <View style={{ height: 5, borderRadius: 3, backgroundColor: '#ECF0E8' }}>
+          <View style={{ height: 5, borderRadius: 3, backgroundColor: colors.track }}>
             <View
               style={{
                 height: 5,
                 width: `${(state.completedLessons.length / lessons.length) * 100}%`,
-                backgroundColor: colors.green,
+                backgroundColor: colors.accent,
                 borderRadius: 3,
               }}
             />
@@ -179,9 +180,9 @@ export function Home({ navigate }: { navigate: (tab: Tab) => void }) {
             );
           })}
       </View>
-      <Card style={{ backgroundColor: '#EEF2E6' }}>
+      <Card style={{ backgroundColor: colors.soft }}>
         <View style={s.row}>
-          <Icon name="lab" color={colors.green} />
+          <Icon name="lab" color={colors.accent} />
           <Text style={s.h3}>{t('Curiosity belongs here.', '讓好奇心帶你前進。')}</Text>
         </View>
         <Text style={s.muted}>

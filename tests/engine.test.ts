@@ -37,6 +37,18 @@ const trade = (
     date,
   );
 describe('cash and share accounting', () => {
+  test('reconciliation rejects a journal with invented realized profit', () => {
+    const p = trade(initial(), 'buy', 1, 10000);
+    expect(reconcile({ ...p, entries: p.entries.map((e) => ({ ...e, realized: 99999 })) })).toBe(
+      false,
+    );
+  });
+  test('reconciliation rejects duplicate or foreign-session entries', () => {
+    const p = trade(initial(), 'buy', 1, 10000);
+    expect(reconcile({ ...p, entries: p.entries.map((e) => ({ ...e, sessionId: 'other' })) })).toBe(
+      false,
+    );
+  });
   test('independently worked multiple-purchase, partial-sale scenario', () => {
     let p = trade(initial(), 'buy', 2, 10000);
     p = trade(p, 'buy', 2, 12000);

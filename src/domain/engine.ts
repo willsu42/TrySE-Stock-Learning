@@ -22,6 +22,11 @@ export function safeInteger(value: number): number {
   if (!Number.isSafeInteger(value)) throw new TradingError('OVERFLOW');
   return value;
 }
+function allocatedCost(cost: number, sold: number, held: number): number {
+  return sold === held
+    ? cost
+    : Number((BigInt(cost) * BigInt(sold) * 2n + BigInt(held)) / (2n * BigInt(held)));
+}
 export function parseMoney(value: string): number | null {
   if (!/^\d+(\.\d{1,2})?$/.test(value.trim())) return null;
   const [whole = '0', fraction = ''] = value.trim().split('.');
@@ -85,13 +90,7 @@ export function executeOrder(
     if (order.quantity > previous.shares) throw new TradingError('INSUFFICIENT_SHARES');
     // Allocate weighted-average book cost, rounding half up to the nearest minor unit.
     // A final sale always releases the entire remaining cost, avoiding rounding residue.
-    const releasedCost =
-      order.quantity === previous.shares
-        ? previous.cost
-        : Number(
-            (BigInt(previous.cost) * BigInt(order.quantity) * 2n + BigInt(previous.shares)) /
-              (2n * BigInt(previous.shares)),
-          );
+    const releasedCost = allocatedCost(previous.cost, order.quantity, previous.shares);
     shares = previous.shares - order.quantity;
     cost = previous.cost - releasedCost;
     cashDelta = amount;
@@ -198,31 +197,102 @@ export function valuation(portfolio: Portfolio, prices: Record<string, number>) 
   };
 }
 export function reconcile(portfolio: Portfolio): boolean {
-  if (
-    portfolio.cash !==
-    portfolio.initialCash + portfolio.entries.reduce((sum, entry) => sum + entry.cashDelta, 0)
-  )
+  try {
+    if (
+      !portfolio ||
+      !Array.isArray(portfolio.entries) ||
+      !portfolio.positions ||
+      !Number.isSafeInteger(portfolio.initialCash) ||
+      portfolio.initialCash <= 0
+    )
+      return false;
+    let cash = portfolio.initialCash,
+      previousDate = '';
+    const seen = new Set<string>();
+    const positions = new Map<string, { shares: number; cost: number }>();
+    for (const entry of portfolio.entries) {
+      if (
+        !entry ||
+        typeof entry.id !== 'string' ||
+        !entry.id ||
+        seen.has(entry.id) ||
+        entry.sessionId !== portfolio.id ||
+        typeof entry.instrumentId !== 'string' ||
+        !entry.instrumentId ||
+        !/^\d{4}-\d{2}-\d{2}$/.test(entry.date) ||
+        entry.date < previousDate ||
+        ![entry.quantity, entry.price, entry.cashDelta, entry.costDelta, entry.realized].every(
+          Number.isSafeInteger,
+        )
+      )
+        return false;
+      seen.add(entry.id);
+      previousDate = entry.date;
+      const old = positions.get(entry.instrumentId) ?? { shares: 0, cost: 0 };
+      let delta = entry.quantity;
+      switch (entry.kind) {
+        case 'buy': {
+          const amount = safeInteger(entry.quantity * entry.price);
+          if (
+            entry.quantity <= 0 ||
+            entry.price <= 0 ||
+            entry.cashDelta !== -amount ||
+            entry.costDelta !== amount ||
+            entry.realized !== 0
+          )
+            return false;
+          break;
+        }
+        case 'sell': {
+          if (entry.quantity <= 0 || entry.quantity > old.shares || entry.price <= 0) return false;
+          const amount = safeInteger(entry.quantity * entry.price);
+          const released = allocatedCost(old.cost, entry.quantity, old.shares);
+          if (
+            entry.cashDelta !== amount ||
+            entry.costDelta !== -released ||
+            entry.realized !== amount - released
+          )
+            return false;
+          delta = -entry.quantity;
+          break;
+        }
+        case 'dividend':
+          if (
+            entry.quantity !== 0 ||
+            entry.price < 0 ||
+            entry.costDelta !== 0 ||
+            entry.cashDelta !== safeInteger(old.shares * entry.price) ||
+            entry.realized !== entry.cashDelta
+          )
+            return false;
+          break;
+        case 'split':
+          if (
+            entry.price !== 0 ||
+            entry.cashDelta !== 0 ||
+            entry.costDelta !== 0 ||
+            entry.realized !== 0 ||
+            (old.shares === 0 && delta !== 0)
+          )
+            return false;
+          break;
+        default:
+          return false;
+      }
+      cash = safeInteger(cash + entry.cashDelta);
+      const shares = safeInteger(old.shares + delta),
+        cost = safeInteger(old.cost + entry.costDelta);
+      if (cash < 0 || shares < 0 || cost < 0 || (shares === 0 && cost !== 0)) return false;
+      positions.set(entry.instrumentId, { shares, cost });
+    }
+    if (cash !== portfolio.cash) return false;
+    const ids = new Set([...positions.keys(), ...Object.keys(portfolio.positions)]);
+    return [...ids].every((id) => {
+      const actual = portfolio.positions[id] ?? { shares: 0, cost: 0 };
+      const expected = positions.get(id) ?? { shares: 0, cost: 0 };
+      return actual.shares === expected.shares && actual.cost === expected.cost;
+    });
+  } catch {
     return false;
-  const ids = new Set([
-    ...Object.keys(portfolio.positions),
-    ...portfolio.entries.map((entry) => entry.instrumentId),
-  ]);
-  return [...ids].every((id) => {
-    const entries = portfolio.entries.filter((entry) => entry.instrumentId === id);
-    const shares = entries.reduce(
-      (sum, entry) =>
-        sum +
-        (entry.kind === 'sell' ? -entry.quantity : entry.kind === 'dividend' ? 0 : entry.quantity),
-      0,
-    );
-    const cost = entries.reduce((sum, entry) => sum + entry.costDelta, 0);
-    const position = portfolio.positions[id] ?? { shares: 0, cost: 0 };
-    return (
-      position.shares === shares &&
-      position.cost === cost &&
-      shares >= 0 &&
-      cost >= 0 &&
-      (shares !== 0 || cost === 0)
-    );
-  });
+  }
 }

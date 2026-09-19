@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Linking, Pressable, Text, View } from 'react-native';
-import { Badge, Button, Card, colors, Icon, styles as s } from '../components/ui';
+import { Badge, Button, Card, Icon, useTheme } from '../components/ui';
 import { lessons, questions, resources } from '../data/learning';
-import { useStore } from '../storage/state';
+import { uniqueId, useStore } from '../storage/state';
+import { recordAnswer } from '../domain/learning';
 import { Tab } from './Home';
 export function Learn({ navigate }: { navigate: (tab: Tab) => void }) {
+  const { colors, styles: s } = useTheme();
   const { state, update, busy } = useStore();
   const [selected, setSelected] = useState<string | null>(null),
     [hint, setHint] = useState(false),
@@ -16,6 +18,9 @@ export function Learn({ navigate }: { navigate: (tab: Tab) => void }) {
   const lesson = lessons.find((item) => item.id === selected);
   const question = questions.find((item) => item.lessonId === selected);
   const answer = question ? state.answers[question.id] : undefined;
+  const attempts = (state.quizAttempts ?? []).filter(
+    (attempt) => attempt.questionId === question?.id,
+  );
   const wrong = questions.filter(
     (q) => state.answers[q.id] !== undefined && state.answers[q.id] !== q.answer,
   );
@@ -38,7 +43,7 @@ export function Learn({ navigate }: { navigate: (tab: Tab) => void }) {
           <Text style={s.h2}>{t('The idea', '核心概念')}</Text>
           <Text style={[s.text, { fontSize: 16, lineHeight: 28 }]}>{lesson.body[l]}</Text>
         </Card>
-        <Card style={{ backgroundColor: '#EDF5EB' }}>
+        <Card style={{ backgroundColor: colors.soft }}>
           <Text style={s.eyebrow}>{t('MAKE IT CONCRETE', '用例子理解')}</Text>
           <Text style={[s.text, { fontSize: 16, lineHeight: 28 }]}>{lesson.example[l]}</Text>
           <Button
@@ -58,17 +63,16 @@ export function Learn({ navigate }: { navigate: (tab: Tab) => void }) {
               disabled={busy}
               key={index}
               onPress={() =>
-                void update((old) => ({
-                  ...old,
-                  answers: { ...old.answers, [question.id]: index },
-                }))
+                void update((old) =>
+                  recordAnswer(old, question, index, uniqueId(), new Date().toISOString()),
+                )
               }
               style={{
                 padding: 16,
                 borderWidth: 1,
-                borderColor: answer === index ? colors.green : colors.line,
+                borderColor: answer === index ? colors.accent : colors.line,
                 borderRadius: 12,
-                backgroundColor: answer === index ? colors.mint : colors.white,
+                backgroundColor: answer === index ? colors.accentSoft : colors.white,
               }}
             >
               <Text style={s.text}>
@@ -81,7 +85,7 @@ export function Learn({ navigate }: { navigate: (tab: Tab) => void }) {
               style={{
                 gap: 8,
                 padding: 16,
-                backgroundColor: answer === question.answer ? '#EAF5EB' : '#FFF5E4',
+                backgroundColor: answer === question.answer ? colors.accentSoft : '#FFF5E4',
                 borderRadius: 12,
               }}
             >
@@ -110,6 +114,36 @@ export function Learn({ navigate }: { navigate: (tab: Tab) => void }) {
             }
           />
         </Card>
+        {attempts.length > 0 && (
+          <Card>
+            <Text style={s.h2}>{t('Your learning attempts', '你的作答紀錄')}</Text>
+            <Text style={s.muted}>
+              {t(
+                'Each answer is saved. A correction is another step forward.',
+                '每次作答都會保留，修正答案也是進步。',
+              )}
+            </Text>
+            {[...attempts]
+              .reverse()
+              .slice(0, 5)
+              .map((attempt) => (
+                <View key={attempt.id} style={[s.between, { flexWrap: 'wrap' }]}>
+                  <View style={{ flex: 1, minWidth: 160 }}>
+                    <Text style={s.text}>{question.options[attempt.answerIndex]?.[l]}</Text>
+                    <Text style={s.muted}>{new Date(attempt.createdAt).toLocaleString(l)}</Text>
+                  </View>
+                  <Badge tone={attempt.correct ? 'accent' : 'amber'}>
+                    {attempt.correct ? t('Correct', '答對') : t('Needs review', '待複習')}
+                  </Badge>
+                </View>
+              ))}
+            {attempts.length > 5 && (
+              <Text style={s.muted}>
+                {t('Showing your latest 5 attempts.', '顯示最近 5 次作答。')}
+              </Text>
+            )}
+          </Card>
+        )}
         <Card>
           <Text style={s.h2}>{t('Try it for yourself', '自己試試看')}</Text>
           <Text style={s.text}>{lesson.practice[l]}</Text>
@@ -212,14 +246,14 @@ export function Learn({ navigate }: { navigate: (tab: Tab) => void }) {
                   height: 44,
                   borderRadius: 14,
                   backgroundColor: state.completedLessons.includes(lesson.id)
-                    ? colors.mint
-                    : '#F1F3ED',
+                    ? colors.accentSoft
+                    : colors.plain,
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
                 {state.completedLessons.includes(lesson.id) ? (
-                  <Icon name="check" color={colors.green} />
+                  <Icon name="check" color={colors.accent} />
                 ) : (
                   <Text style={s.h3}>{String(lessons.indexOf(lesson) + 1).padStart(2, '0')}</Text>
                 )}

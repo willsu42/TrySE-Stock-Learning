@@ -1,21 +1,13 @@
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
-import {
-  Badge,
-  Button,
-  Card,
-  colors,
-  Field,
-  LineChart,
-  money,
-  styles as s,
-} from '../components/ui';
+import { Badge, Button, Card, Field, LineChart, money, useTheme } from '../components/ui';
 import { useStore, uniqueId } from '../storage/state';
 import { candle, instruments, visibleHistory } from '../data/market';
 import forecasts from '../data/forecasts.json';
 import { evaluateForecast, lockForecast } from '../domain/forecast';
 import { parseMoney } from '../domain/engine';
 export function Lab() {
+  const { colors, styles: s } = useTheme();
   const { state, update, busy } = useStore();
   const [stockIndex, setStockIndex] = useState(0),
     [horizon, setHorizon] = useState<1 | 5>(1),

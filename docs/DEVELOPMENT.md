@@ -22,11 +22,13 @@
 
 ## Persistence
 
-The first build stores a versioned application snapshot for learning and session state, plus an independently queryable append-only trade journal. Saving both happens in one SQLite transaction. Portfolio updates must pass cash/share/cost reconciliation. Revision checks reject a stale writer rather than overwriting another window's save.
+The first build stores a versioned application snapshot for learning and session state, plus an independently queryable append-only trade journal. Saving both happens in one SQLite transaction. Portfolio updates must pass cash/share/cost and realized-profit reconciliation. Loading and saving verify that active portfolios match their journal entries. Existing trades cannot be removed or rewritten, and resetting a replay retains its old journal under its old session ID. Revision checks reject a stale writer rather than overwriting another window's save. Databases from newer schema versions are rejected without downgrading them.
 
 Market data has normalized dataset, instrument, and daily-price tables. The app seeds the bundled fixture once, then loads its persisted prices into a read cache. The active dataset remains `synthetic-v1`; external staging databases cannot silently replace it.
 
-The current state snapshot is deliberately small. Future accounts, per-attempt quiz history, and synchronization will require further schema migrations and an explicit conflict policy. SQLite/PostgreSQL synchronization is not automatic.
+Quiz attempts record the answer, correctness, question version, time, and language. Older version-1 snapshots without attempt history remain readable; previous answers are preserved without inventing historical attempts. The lesson screen shows the latest five attempts for its question while retaining all attempts in storage. Repository saves enforce append-only quiz history and allow locked forecasts only to transition to revealed.
+
+The current state snapshot is deliberately small. Future accounts, normalized learning-history tables, and synchronization will require further schema migrations and an explicit conflict policy. SQLite/PostgreSQL synchronization is not automatic.
 
 ## Import a permitted CSV
 
