@@ -1,66 +1,81 @@
 # TrySE — Stock Learning
 
-Website Link: https://try-se-stock-learning.vercel.app/  
-
 **Learn a concept. Practice a trade. Explain the result.**
 
-TrySE is a Traditional Chinese and English stock-learning app built with React Native, Expo, and TypeScript for iOS and Android. It brings beginner lessons, quizzes, a trading simulator, and a forecast challenge into one learning flow.
+**Live prototype:** https://try-se-stock-learning.vercel.app/
 
-This is a rebuild of a 2019 Android capstone project. The original combined nine lessons, 50 SQLite quiz questions, and a TSMC/Innolux simulator. This version preserves the original repository, selectively adapts its educational content, and replaces its error-prone trading logic with a tested accounting engine.
+TrySE is a bilingual (Traditional Chinese / English) investing-education app for iOS, Android, and the web. It combines guided lessons, knowledge checks, a paper-trading simulator, and a forecast challenge into a single learning loop, so beginners can move from reading about a concept to applying it with a practice portfolio and understanding why their results changed.
 
-> **Current status:** a working, local-first prototype with 20 stocks and synthetic prices. Browser flows have been checked and iOS/Android bundles export successfully. Native device testing and licensed historical market data are still pending.
+> **Stage:** functional prototype (v0.1). The core product loop, accounting engine, and local persistence are implemented and tested. The prototype runs on synthetic price data; licensed market data, native device certification, and cloud services are the next milestones on the [path to production](#path-to-production).
 
-## The project in 30 seconds
+## Why TrySE
 
-> “I’m rebuilding my Android stock-learning capstone as a bilingual, cross-platform app. The main engineering challenge is making the simulator’s accounting reliable: money uses integer units, partial sales have explicit rounding rules, and trades and portfolio state are saved in one SQLite transaction. I also added a forecast replay challenge that compares the learner with a simple model and a no-change baseline. The current prototype uses synthetic data so the learning flow and accounting can be tested before integrating licensed market data.”
+Most beginner investing resources fall into two camps: static articles that never let learners practice, or brokerage-style simulators that assume prior knowledge and reward guessing. TrySE closes that gap:
 
-## What you can demonstrate
+- **Learning and practice are connected.** Each lesson leads into a hands-on exercise, and the simulator explains cash, cost basis, and realized versus unrealized gains instead of showing only a balance.
+- **Built for Taiwan and US markets.** Separate TWD and USD practice wallets, local display conventions (red-for-gain in Chinese, green-for-gain in English), and content in both languages.
+- **Forecast literacy, not stock tips.** Learners lock in a prediction, reveal the outcome, and compare themselves with a no-change baseline and a simple model—learning how hard forecasting is rather than being told what to buy.
+- **No account required.** Progress is stored on the device, which lowers the barrier for students, classrooms, and first-time investors.
 
-| Feature           | Learner experience                                                                                                                     |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| Guided learning   | Nine bilingual lessons with examples, hints, knowledge checks, and saved answer history.                                               |
-| Trading practice  | Buy and sell whole shares, advance a replay, and inspect cash, holdings, cost basis, and realized/unrealized gains.                    |
-| Two markets       | Ten Taiwan stocks and ten US stocks, with independent TWD and USD practice wallets.                                                    |
-| Forecast lab      | Lock a one- or five-session prediction, reveal the hidden outcome, and compare errors against a baseline and a ridge-regression model. |
-| Further reading   | Twelve external resources with search, language filters, bookmarks, and read status.                                                   |
-| Local persistence | Resume portfolios, lessons, quiz attempts, and predictions after reopening the app. No account required.                               |
+**Target audiences:** beginner retail investors, university and high-school financial-literacy courses, and educational partners (schools, community programs, financial institutions) seeking a safe, no-money-at-risk practice environment.
 
-Language changes preserve progress and do not change the selected market or currency. Chinese uses a blue/gray interface and red-for-gain/green-for-loss amounts. English retains the green theme and opposite profit/loss colors. Signed amounts remain visible; chart lines use the interface accent color.
+## Product capabilities
 
-### A three-minute demo
+| Capability      | What learners get                                                                                                                      |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Guided learning | Nine bilingual lessons with examples, hints, knowledge checks, and saved answer history.                                               |
+| Paper trading   | Buy and sell whole shares, advance a market replay, and inspect cash, holdings, cost basis, and realized/unrealized gains.             |
+| Two markets     | Ten Taiwan stocks and ten US stocks, with independent TWD and USD practice wallets.                                                    |
+| Forecast lab    | Lock a one- or five-session prediction, reveal the hidden outcome, and compare errors against a baseline and a ridge-regression model. |
+| Further reading | Curated external resources with search, language filters, bookmarks, and read status.                                                  |
+| Offline-first   | Portfolios, lessons, quiz attempts, and predictions persist across sessions with no sign-up.                                           |
 
-1. **Learn:** open a lesson, submit an incorrect answer, read the explanation, then correct it. Show that both attempts are retained.
-2. **Practice:** buy shares, advance a session, and sell part of the position. Explain how cash, remaining cost basis, and realized profit differ.
-3. **Resume:** reload the app to show persistence, then switch languages to show the same learning progress and portfolio.
-4. **Experiment:** lock a forecast and reveal the outcome. Compare the learner, the unchanged-price baseline, and the model without claiming the model can reliably predict markets.
+Switching language preserves progress and never changes the selected market or currency.
 
-## Engineering decisions worth discussing
+### Core user journey
 
-### Accounting is independent of the interface
+1. **Learn** — open a lesson, answer a knowledge check, and review the explanation. Every attempt is retained for review.
+2. **Practice** — buy shares, advance the replay, and sell part of a position. The portfolio view breaks down how cash, remaining cost basis, and realized profit changed.
+3. **Return** — reopen the app on the same device and continue where you left off, in either language.
+4. **Experiment** — lock a forecast, reveal the outcome, and see how it compares with the baseline and the model.
 
-The [TypeScript engine](src/domain/engine.ts) validates orders and returns new portfolio state. Screens collect input and display results; formatted text is never used as an accounting source.
+## Built for production from the start
 
-Money is stored as integer hundredths of a currency unit. Partial sales release weighted-average cost with an explicit rounding rule, and a final sale releases all remaining cost. Tests cover purchases, partial/full sales, invalid orders, duplicate submissions, market isolation, and reconciliation.
+Although TrySE is a prototype, its foundations were designed to scale to a production service rather than be rewritten later.
 
-### A save must preserve the whole transaction
+### Reliable, auditable accounting
 
-The [SQLite repository](src/storage/repository.ts) commits the application snapshot and trade journal in one transaction. A failed save rolls back both. Revision checks reject stale writers, and loading/saving verifies that active portfolios match their journal entries.
+The [accounting engine](src/domain/engine.ts) is a pure TypeScript module, fully separated from the UI. It validates every order and returns new portfolio state; displayed text is never used as an accounting source.
 
-Existing trades and quiz attempts cannot be rewritten through repository saves. Locked forecasts can be revealed but cannot have their predictions changed. Restarting a replay creates a new session and retains its old journal.
+- Money is stored as integer minor units (hundredths), eliminating floating-point drift.
+- Partial sales release weighted-average cost with an explicit rounding rule; a final sale releases all remaining cost.
+- Tests cover purchases, partial and full sales, invalid orders, duplicate submissions, market isolation, and reconciliation.
 
-**Tradeoff:** learning and session state currently use a versioned JSON snapshot alongside normalized market-data tables and a queryable trade journal. This keeps the offline prototype small; accounts, larger histories, and cross-device sync will need further schema work.
+Because the engine has no UI or storage dependencies, the same logic can run on-device today and on a server later.
 
-### Forecasts must respect what was known at the time
+### Transactional persistence
 
-The [Python pipeline](scripts/train_forecasts.py) trains a small scikit-learn ridge-regression model using trailing returns. Each forecast cutoff uses only training inputs and labels available by that cutoff. A test changes future prices and checks that the earlier prediction stays unchanged.
+The [SQLite repository](src/storage/repository.ts) commits application state and the trade journal in a single transaction; a failed save rolls back both. Revision checks reject stale writes, and portfolios are verified against their journal on every load and save.
 
-The app bundles **520 precomputed forecasts** and compares them with a no-change baseline. This avoids a model service in the first build and makes the experiment reproducible. Synthetic-data results demonstrate the workflow, not forecasting performance on real markets.
+- Recorded trades and quiz attempts are append-only.
+- Locked forecasts can be revealed but never edited.
+- Restarting a replay creates a new session and preserves the previous journal.
 
-### Legacy content is reused selectively
+These guarantees—atomic writes, optimistic concurrency, and an immutable journal—map directly onto a future server-side database and cross-device sync.
 
-The original repository remains unchanged. Its 50 quiz questions are preserved in a [review archive](data/legacy/questions.zh-TW.json), with source references and a checksum. The app currently uses nine curated bilingual knowledge checks; the full legacy question bank is not presented as reviewed or published content.
+### Leakage-free forecasting
 
-## Architecture and stack
+The [forecast pipeline](scripts/train_forecasts.py) trains a scikit-learn ridge-regression model on trailing returns. Each forecast uses only data available at its cutoff, and a dedicated test changes future prices to confirm earlier predictions do not move. The prototype bundles 520 precomputed forecasts for reproducibility; the same pipeline is designed to run as a scheduled job against licensed data.
+
+### Data pipeline with provenance
+
+A [CSV importer](scripts/import_prices.py) validates external price data and stages it with source metadata and a dataset version, establishing the contract for licensed data feeds. Staged datasets are not yet wired into app replays.
+
+### Content governance
+
+Educational content is tied to stable IDs so progress survives translation and revision. Legacy material is preserved in a [review archive](data/legacy/questions.zh-TW.json) with source references and a checksum; only reviewed content is published in the app.
+
+## Architecture
 
 ```mermaid
 flowchart TD
@@ -70,50 +85,56 @@ flowchart TD
     Result --> Store
     Store --> Repo[Repository: transactions and revision checks]
     Repo --> DB[(Local SQLite)]
-    Fixtures[Versioned bundled prices] --> DB
-    Python[Offline Python training] --> Forecasts[Bundled model forecasts]
+    Fixtures[Versioned price datasets] --> DB
+    Python[Offline Python training] --> Forecasts[Precomputed model forecasts]
     Forecasts --> UI
 ```
 
-| Layer         | Technology and purpose                                                                |
-| ------------- | ------------------------------------------------------------------------------------- |
-| App           | React Native + Expo + TypeScript; shared iOS/Android code and a browser preview.      |
-| Storage       | `expo-sqlite`; local prices, application state, and trade journal.                    |
-| Domain        | Pure TypeScript functions for orders, accounting, valuation, and forecast evaluation. |
-| UI checks     | Jest, `jest-expo`, and React Native Testing Library.                                  |
-| Data tooling  | Python CSV validation and SQLite staging imports.                                     |
-| ML experiment | Python + scikit-learn; offline training and precomputed predictions.                  |
+| Layer        | Technology and purpose                                                      |
+| ------------ | --------------------------------------------------------------------------- |
+| Client       | React Native + Expo + TypeScript; one codebase for iOS, Android, and web.   |
+| Storage      | `expo-sqlite`; local prices, application state, and trade journal.          |
+| Domain       | Pure TypeScript for orders, accounting, valuation, and forecast evaluation. |
+| Testing      | Jest, `jest-expo`, and React Native Testing Library.                        |
+| Data tooling | Python CSV validation and versioned SQLite staging imports.                 |
+| ML           | Python + scikit-learn; offline training with precomputed predictions.       |
+| Hosting      | Vercel static web build (no backend required for the prototype).            |
 
-See [development notes](docs/DEVELOPMENT.md) for the source map, persistence details, and CSV import contract.
+See the [development notes](docs/DEVELOPMENT.md) for the source map, persistence details, and CSV import contract.
 
-## Data and simulation boundaries
+## Prototype boundaries
 
-**Where do prices come from?** The running app uses generated fixtures: **15,660 fictional daily OHLCV records**, labeled 2023–2025, across 20 stock identifiers. It does not currently call a price API or crawl websites. Those dates follow a fictional weekday calendar, not actual exchange sessions.
+To keep expectations clear, the current prototype has these limits:
 
-The catalog includes Taiwan stocks such as TSMC, MediaTek, and Hon Hai, and US stocks such as Apple, Microsoft, and NVIDIA. Company identifiers are real; their bundled prices are synthetic. The [full catalog](src/data/instruments.json) contains all 20 instruments.
+- **Synthetic prices.** The app ships 15,660 generated daily OHLCV records (labeled 2023–2025) for 20 real company identifiers—including TSMC, MediaTek, Hon Hai, Apple, Microsoft, and NVIDIA. Identifiers are real; prices and trading calendars are not. No price API or web crawling is used. See the [instrument catalog](src/data/instruments.json).
+- **Simplified trading rules.** Starting cash of TWD 1,000,000 and USD 100,000 in separate wallets; whole shares only; immediate execution at the displayed close; no fees, taxes, leverage, short selling, or currency conversion.
+- **Replay scenarios.** Trading exercises use 20 or 60 sessions starting at `2024-01-02`; forecast challenges use separate 2025 cutoffs.
+- **Corporate actions.** Split and cash-dividend primitives are implemented and tested, but bundled scenarios contain none, and real entitlement timing is not yet modeled.
+- **Device-local only.** No accounts, sync, or analytics.
+- **Educational use only.** TrySE is a simulator and does not provide investment advice or connect to real brokerage accounts.
 
-A CSV importer validates permitted external data and stages it with source metadata and a dataset version. **Staged imports are not yet available for app replay.** Provider selection, usage rights, real trading calendars, and corporate-action coverage must be resolved before activation.
+## Path to production
 
-### Accounting rules
+| Milestone                | Scope                                                                                                                                                                                                                                                 |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Production readiness  | Integrate licensed daily history for the initial 20 stocks with real exchange calendars and corporate actions; certify on physical iOS/Android devices; expand and review educational content; app-store release.                                     |
+| 2. Platform & scale      | PostgreSQL/Supabase backend for the market catalog, content, and forecasts; scheduled, validated market-data imports; versioned scenario downloads; expansion to Taiwan 50 (0050), S&P 500, and QQQ holdings (~650 instruments, ~1.8M daily records). |
+| 3. Accounts & engagement | Optional accounts with cross-device sync and explicit conflict handling; progress analytics; classroom/instructor tools for educational partners.                                                                                                     |
+| 4. Realism & insight     | Fees, taxes, settlement, limit orders and order states, multi-currency FX, benchmarks and portfolio analytics, additional models with uncertainty estimates.                                                                                          |
+| 5. Grounded AI tutoring  | Bilingual AI tutor grounded in reviewed educational sources, with model and dataset version tracking.                                                                                                                                                 |
 
-- Starting cash: **TWD 1,000,000** and **USD 100,000**, in separate wallets.
-- Whole shares only; immediate execution at the displayed synthetic close.
-- Zero fees/taxes; no leverage, short selling, or currency conversion.
-- Weighted-average cost; partial-sale cost rounds half up to a minor unit.
-- Price changes affect market value, while cash changes through recorded transactions.
-- Trading exercises use 20 or 60 fictional sessions starting at `2024-01-02`; forecast challenges use separate 2025 cutoffs.
-- Split and cash-dividend primitives are tested, but real entitlement/payment timing and fractional-share policies remain incomplete. The bundled scenarios contain no corporate actions.
+The [detailed roadmap](docs/ROADMAP.md) covers the proposed market universe, data-source candidates, database design, and completion criteria. Real-money brokerage integration, if pursued, would be a separate milestone with its own security, compliance, and operational requirements.
 
-## Run locally
+## Getting started
 
 Requires **Node.js 22.13+** and npm.
 
 ```sh
 npm ci
-npm run web          # Local browser preview
+npm run web          # Browser preview
 ```
 
-For native development:
+Native development:
 
 ```sh
 npm start            # Expo development server
@@ -121,23 +142,21 @@ npm run ios          # Requires Xcode and an iOS simulator
 npm run android      # Requires Android SDK and an emulator/device
 ```
 
-Use an Expo Go version compatible with the project's SDK 57, or a compatible development build. The web preview uses SQLite too; `metro.config.js` provides its required cross-origin isolation headers.
+Use an Expo Go version compatible with SDK 57, or a matching development build. The web preview also uses SQLite; `metro.config.js` provides the required cross-origin isolation headers.
 
-## Deploy the web demo
+### Deploying the web build
 
-Import this GitHub repository into Vercel using **Framework Preset: Other** and the repository root. The included [vercel.json](vercel.json) sets the web export command, `dist` output directory, and SQLite isolation headers. No environment variables or backend services are required for the current demo.
+Import the repository into Vercel with **Framework Preset: Other** and the repository root. [vercel.json](vercel.json) defines the export command, `dist` output directory, and SQLite isolation headers; no environment variables or backend services are required. See the [deployment guide](docs/DEPLOYMENT.md) for details and troubleshooting. Native app distribution is handled separately.
 
-Follow the [Vercel deployment guide](docs/DEPLOYMENT.md) for setup, public-access checks, and troubleshooting. This publishes the browser demo; native app distribution is separate.
-
-## Verification
+## Quality and verification
 
 ```sh
 npm run check          # TypeScript, Jest, SQLite persistence, CSV importer tests
 npm run format:check
-npm run export:native  # iOS/Android JS and Hermes bundles, not signed apps
+npm run export:native  # iOS/Android JS and Hermes bundles (unsigned)
 ```
 
-To run the separate forecast checks:
+Forecast model tests:
 
 ```sh
 python3 -m venv .venv
@@ -145,14 +164,8 @@ python3 -m venv .venv
 npm run test:models
 ```
 
-Validation covers accounting, transaction rollback, saved-history protection, lesson interactions, CSV validation, and future-data isolation. Browser checks include trades, reload persistence, bilingual themes, bookmarks, and forecast reveal. **Bundle export is verified; native simulator/device execution is not yet verified.**
+Automated tests cover accounting, transaction rollback, history immutability, lesson interactions, CSV validation, and future-data isolation. Browser flows—trading, persistence across reloads, bilingual themes, bookmarks, and forecast reveal—have been verified manually. iOS and Android bundles export successfully; on-device verification is part of Milestone 1.
 
-## Next steps
+## Background
 
-| Phase                    | Scope                                                                                                                                                 |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Finish the testing phase | Verify native devices, integrate licensed daily history for the 20 stocks, validate calendars/corporate actions, and review more educational content. |
-| Expand paper trading     | Add Taiwan 50/0050, S&P 500, and QQQ collections; introduce PostgreSQL/Supabase, versioned downloads, and scheduled market-data imports.              |
-| Improve realism          | Model fees, taxes, settlement, order states, and broader corporate actions. Account synchronization needs its own conflict policy.                    |
-
-The [detailed roadmap](docs/ROADMAP.md) preserves the proposed market universe, data-source candidates, database expansion, and completion criteria. Cloud services and automatic price updates are planned, not implemented. Real-money brokerage integration would be a separate milestone.
+TrySE began as a 2019 Android capstone project with nine lessons, a 50-question quiz bank, and a two-stock simulator. This version is a ground-up rebuild: a cross-platform codebase, a tested accounting engine replacing the original trading logic, a forecast challenge, and a data and architecture foundation intended to grow into a production learning platform. The original repository is preserved unchanged.
